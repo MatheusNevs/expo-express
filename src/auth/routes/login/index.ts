@@ -5,7 +5,7 @@ export const loginRouter = express.Router();
 
 loginRouter.use(githubLoginRouter);
 
-loginRouter.get("/login", async (_, res) => {
+loginRouter.get("/auth/login", async (_, res) => {
 	if (res.locals.session) {
 		return res.redirect("/");
 	}

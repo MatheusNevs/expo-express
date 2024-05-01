@@ -14,12 +14,14 @@ datasource db {
 }
 
 model User {
-  id       String    @id
-  sessions Session[]
+  id        String    @id @default(cuid())
+  github_id String    @unique
+  username  String
+  sessions  Session[]
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
   expiresAt DateTime
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)

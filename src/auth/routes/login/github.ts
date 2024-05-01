@@ -1,8 +1,8 @@
 import { OAuth2RequestError, generateState } from "arctic";
 import express from "express";
-import { github, adapter } from "../../auth";
+import { github, lucia } from "../../auth";
 import { parseCookies, serializeCookie } from "oslo/cookie";
-import { generateId } from "lucia";
+import { db } from "../../../db";
 
 
 export const githubLoginRouter = express.Router();
@@ -41,9 +41,11 @@ githubLoginRouter.get("/login/github/callback", async (req, res) => {
 			}
 		});
 		const githubUser: GitHubUser = await githubUserResponse.json();
-		const existingUser = db.prepare("SELECT * FROM user WHERE github_id = ?").get(githubUser.id) as
-			| DatabaseUser
-			| undefined;
+		const existingUser = await db.user.findFirst({
+			where: {
+				github_id: githubUser.id
+			}
+		})
 
 		if (existingUser) {
 			const session = await lucia.createSession(existingUser.id, {});
@@ -51,14 +53,13 @@ githubLoginRouter.get("/login/github/callback", async (req, res) => {
 				.appendHeader("Set-Cookie", lucia.createSessionCookie(session.id).serialize())
 				.redirect("/");
 		}
-
-		const userId = generateId(15);
-		db.prepare("INSERT INTO user (id, github_id, username) VALUES (?, ?, ?)").run(
-			userId,
-			githubUser.id,
-			githubUser.login
-		);
-		const session = await lucia.createSession(userId, {});
+		const newUser = await db.user.create({
+			data: {
+				github_id: githubUser.id,
+				username: githubUser.login,
+			}
+		});
+		const session = await lucia.createSession(newUser.id, {});
 		return res
 			.appendHeader("Set-Cookie", lucia.createSessionCookie(session.id).serialize())
 			.redirect("/");
