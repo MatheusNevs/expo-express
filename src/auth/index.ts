@@ -5,11 +5,11 @@ import { loginRouter } from "./routes/login/index.ts";
 import { logoutRouter } from "./routes/logout.ts";
 import type { User, Session } from "lucia";
 
-const app = express();
+export const authRouter = express.Router();
 
-app.use(express.urlencoded());
+authRouter.use(express.urlencoded());
 
-app.use("/auth", (req, res, next) => {
+authRouter.use("/auth", (req, res, next) => {
 	if (req.method === "GET") {
 		return next();
 	}
@@ -21,7 +21,7 @@ app.use("/auth", (req, res, next) => {
 	return next();
 });
 
-app.use("/auth", async (req, res, next) => {
+authRouter.use("/auth", async (req, res, next) => {
 	const sessionId = lucia.readSessionCookie(req.headers.cookie ?? "");
 	if (!sessionId) {
 		res.locals.user = null;
@@ -41,7 +41,7 @@ app.use("/auth", async (req, res, next) => {
 	return next();
 });
 
-app.use(loginRouter, logoutRouter);
+authRouter.use(loginRouter, logoutRouter);
 
 declare global {
 	namespace Express {
