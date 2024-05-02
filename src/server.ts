@@ -7,5 +7,5 @@ export const app = express();
 
 app.use(tRPCRouter, authRouter)
 
-app.listen(3000);
+app.listen(3001);
 
