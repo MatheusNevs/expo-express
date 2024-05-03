@@ -7,7 +7,7 @@ loginRouter.use(githubLoginRouter);
 
 loginRouter.get("/auth/login", async (_, res) => {
 	if (res.locals.session) {
-		return res.redirect("/");
+		return res.redirect("http://localhost:3000/");
 	}
 	return res.status(200);
 });

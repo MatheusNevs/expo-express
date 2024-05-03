@@ -7,7 +7,7 @@ import { db } from "../../../db";
 
 export const githubLoginRouter = express.Router();
 
-githubLoginRouter.get("/login/github", async (_, res) => {
+githubLoginRouter.get("/auth/login/github", async (_, res) => {
 	const state = generateState();
 	const url = await github.createAuthorizationURL(state);
 	res
@@ -24,7 +24,7 @@ githubLoginRouter.get("/login/github", async (_, res) => {
 		.redirect(url.toString());
 });
 
-githubLoginRouter.get("/login/github/callback", async (req, res) => {
+githubLoginRouter.get("/auth/login/github/callback", async (req, res) => {
 	const code = req.query.code?.toString() ?? null;
 	const state = req.query.state?.toString() ?? null;
 	const storedState = parseCookies(req.headers.cookie ?? "").get("github_oauth_state") ?? null;
@@ -51,7 +51,7 @@ githubLoginRouter.get("/login/github/callback", async (req, res) => {
 			const session = await lucia.createSession(existingUser.id, {});
 			return res
 				.appendHeader("Set-Cookie", lucia.createSessionCookie(session.id).serialize())
-				.redirect("/");
+				.redirect("http://localhost:3000/");
 		}
 		const newUser = await db.user.create({
 			data: {
@@ -62,7 +62,7 @@ githubLoginRouter.get("/login/github/callback", async (req, res) => {
 		const session = await lucia.createSession(newUser.id, {});
 		return res
 			.appendHeader("Set-Cookie", lucia.createSessionCookie(session.id).serialize())
-			.redirect("/");
+			.redirect("http://localhost:3000/");
 	} catch (e) {
 		if (e instanceof OAuth2RequestError && e.message === "bad_verification_code") {
 			// invalid code

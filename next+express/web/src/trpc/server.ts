@@ -10,9 +10,7 @@ import { observable } from "@trpc/server/observable";
 import { type TRPCErrorResponse } from "@trpc/server/rpc";
 import { headers } from "next/headers";
 import { cache } from "react";
-
 import { appRouter, type AppRouter, createTRPCContext } from "../../../express-trpc-prisma/src/trpc/trpc";
-import { transformer } from "./shared";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
