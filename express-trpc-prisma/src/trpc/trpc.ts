@@ -3,6 +3,8 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import { db } from "../db";
 import superjson from "superjson";
+import { lucia } from '../auth/auth';
+import { z } from "zod";
 
 // created for each request
 export const createContext = async ({
@@ -31,9 +33,9 @@ const t = initTRPC.context<typeof createContext>().create({
 });
 const procedure = t.procedure;
 export const appRouter = t.router({
-    helloWorld: procedure.query( () => {
-        console.log("Hello World");
-        return "Hello World";
+    getUserSession: procedure.input(z.object({sessionId: z.string()})).query( async ({input}) => {
+      const session = await lucia.validateSession(input.sessionId);
+      return session;
     })
 });
 

@@ -4,7 +4,6 @@ import { TamaguiProvider } from "tamagui";
 import tamaguiConfig from "@/tamagui.config";
 
 export default function RootLayout() {
-
   return (
     <TRPCProvider>
       <TamaguiProvider config={tamaguiConfig}>

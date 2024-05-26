@@ -1,8 +1,14 @@
-import { api } from "@/utils/api";
-import { Text, View } from "react-native";
 
-export default function Index() {
-  const ans = api.helloWorld.useQuery();
+import { api } from "@/utils/api";
+import { getUserSession, signIn } from "@/utils/auth";
+import { useState } from "react";
+import { Text, View } from "react-native";
+import { Button } from "tamagui";
+
+
+export default async function Index() {
+  const userSession = getUserSession();
+
   return (
     <View
       style={{
@@ -11,7 +17,8 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>{ans.data}</Text>
+      <Button onPress={signIn}> SignIn </Button> 
+      <Text> {userSession?.data?.user?.username || "Nao tem sessão"} </Text> 
     </View>
   );
 }
