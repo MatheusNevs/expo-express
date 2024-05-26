@@ -2,26 +2,33 @@ import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import { db } from "../db";
-
+import superjson from "superjson";
 
 // created for each request
-export const createContext = ({
+export const createContext = async ({
   req,
   res,
-}: trpcExpress.CreateExpressContextOptions) => ({}); // no context yet
-type Context = Awaited<ReturnType<typeof createContext>>;
-
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+}: trpcExpress.CreateExpressContextOptions) => {
   // const session = await getServerAuthSession();
-
+  
   return {
     db,
     // session,
-    ...opts,
+    ...req.headers,
   };
 };
+type Context = Awaited<ReturnType<typeof createContext>>;
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<typeof createContext>().create({
+  transformer: superjson,
+  errorFormatter: ({ shape, error }) => ({
+    ...shape,
+    data: {
+      ...shape.data,
+      error
+    },
+  }),
+});
 const procedure = t.procedure;
 export const appRouter = t.router({
     helloWorld: procedure.query( () => {
