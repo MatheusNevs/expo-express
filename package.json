@@ -1,14 +1,14 @@
 {
-  "name": "teste-next-express",
+  "name": "mono-repo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "pnpm run --parallel dev",
-    "build:server": "pnpm --filter express-trpc-prisma-lucia build",
     "build:web": "pnpm --filter web build",
-    "start:server": "pnpm --filter express-trpc-prisma-lucia start:prod",
-    "start:web": "pnpm --filter web start"
+    "start:server": "pnpm --filter express-trpc-prisma dev",
+    "start:web": "pnpm --filter web start",
+    "start:mobile": "pnpm --filter mobile start"
   },
   "keywords": [],
   "author": "",
