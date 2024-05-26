@@ -17,11 +17,12 @@
   "dependencies": {
     "@lucia-auth/adapter-prisma": "^4.0.1",
     "@prisma/client": "^5.13.0",
-    "@trpc/server": "^10.45.2",
+    "@trpc/server": "11.0.0-rc.364",
     "arctic": "^1.8.0",
     "express": "^4.19.2",
     "lucia": "^3.2.0",
     "oslo": "^1.2.0",
-    "prisma": "^5.13.0"
+    "prisma": "^5.13.0",
+    "superjson": "^2.2.1"
   }
 }
