@@ -9,20 +9,8 @@ export const authRouter = express.Router();
 
 authRouter.use(express.urlencoded());
 
-authRouter.use("/auth", (req, res, next) => {
-	if (req.method === "GET") {
-		return next();
-	}
-	const originHeader = req.headers.origin ?? null;
-	const hostHeader = req.headers.host ?? null;
-	if (!originHeader || !hostHeader || !verifyRequestOrigin(originHeader, [hostHeader])) {
-		return res.status(403).end();
-	}
-	return next();
-});
-
 authRouter.use("/auth", async (req, res, next) => {
-	const sessionId = lucia.readSessionCookie(req.headers.cookie ?? "");
+	const sessionId = req.headers.authorization && req.headers.authorization.split(' ')[1];
 	if (!sessionId) {
 		res.locals.user = null;
 		res.locals.session = null;
