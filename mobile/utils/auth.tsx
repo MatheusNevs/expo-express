@@ -1,27 +1,79 @@
 import * as Browser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import * as SecureStore from "expo-secure-store";
-import { api } from "./api";
-import { getBaseUrl } from "./api";
+import { api, getBaseUrl } from "./api";
+import { createContext, useContext, useEffect, useState } from "react";
 
-export async function signIn() {
-    const result = await Browser.openAuthSessionAsync(
-       `${getBaseUrl()}/auth/login/github`,
-        "exp://192.168.100.10:8081"
-    );
-    if (result.type !== "success") return;
-    const url = Linking.parse(result.url);
-    const sessionToken = url.queryParams?.session_token?.toString() ?? null;
-    if (!sessionToken)
-        return;
-    await SecureStore.setItemAsync("session_token", sessionToken);
-    return;
+interface AuthProps { 
+    userSession?: {
+        user: {
+            id: string,
+            githubId: string,
+            username: string
+        } | null,
+        session: {
+            id: string,
+            userId: string,
+            fresh: boolean,
+            expiresAt: Date
+        } | null
+    },
+    signIn?: () => Promise<void>,
+    logOut?: () => Promise<Response | undefined>
+}       
+
+const API_ADDRESS = getBaseUrl();
+const AuthContext = createContext<AuthProps>({});
+export const useAuth = () => {
+    return useContext(AuthContext);
 };
 
-export function getUserSession() {
-    // const sessionToken = await SecureStore.getItemAsync("session_token");
-    // if (!sessionToken)
-    //     return;
-    const userSession = api.getUserSession.useQuery({sessionId: "2mpgvpdlerxgul3ckvm4o5rxcuc5fetdu75havcw"});
-    return userSession;
+export const AuthProvider = ({children}: any) => {
+    const [sessionToken, setSessionToken] = useState("");
+    useEffect( () => {
+        const token = SecureStore.getItem("session_token");
+        if (token)
+            setSessionToken(token);
+    }, [])
+    const userSession = api.getUserSession.useQuery({sessionId: sessionToken}).data;
+
+    const value = {
+        userSession: userSession,
+        signIn: signIn,
+        logOut: logOut
+    };
+
+    async function signIn() {
+        const result = await Browser.openAuthSessionAsync(
+           `${API_ADDRESS}/auth/login/github`,
+            "exp://192.168.100.10:8081"
+        );
+        if (result.type !== "success") return;
+        const url = Linking.parse(result.url);
+        const sessionToken = url.queryParams?.session_token?.toString() ?? null;
+        if (!sessionToken)
+            return;
+        setSessionToken(sessionToken);
+        await SecureStore.setItemAsync("session_token", sessionToken);
+        return;
+    };
+    
+    async function logOut() {
+        const sessionToken =  SecureStore.getItem("session_token");
+        if (!sessionToken)
+            return
+        const res = await fetch(`${API_ADDRESS}/auth/logout`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${sessionToken}`
+            }
+        })
+        SecureStore.deleteItemAsync("session_token");
+        setSessionToken("");
+        return res;
+    }
+
+    return (
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    )
 }
