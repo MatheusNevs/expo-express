@@ -1,5 +1,4 @@
 import express from "express";
-import { verifyRequestOrigin } from "lucia";
 import { lucia } from "./auth.js";
 import { loginRouter } from "./routes/login/index.ts";
 import { logoutRouter } from "./routes/logout.ts";
