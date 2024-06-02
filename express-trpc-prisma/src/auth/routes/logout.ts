@@ -8,7 +8,5 @@ logoutRouter.post("/", async (_, res) => {
 		return res.status(401).end();
 	}
 	await lucia.invalidateSession(res.locals.session.id);
-	return res
-		.setHeader("Set-Cookie", lucia.createBlankSessionCookie().serialize())
-		.redirect("/login");
+	return res.redirect("/login");
 });

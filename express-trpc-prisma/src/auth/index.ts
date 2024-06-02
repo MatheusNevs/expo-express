@@ -17,12 +17,6 @@ authRouter.use("/auth", async (req, res, next) => {
 	}
 
 	const { session, user } = await lucia.validateSession(sessionId);
-	if (session && session.fresh) {
-		res.appendHeader("Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-	}
-	if (!session) {
-		res.appendHeader("Set-Cookie", lucia.createBlankSessionCookie().serialize());
-	}
 	res.locals.session = session;
 	res.locals.user = user;
 	return next();
