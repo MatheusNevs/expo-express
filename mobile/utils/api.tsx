@@ -6,6 +6,12 @@ import { createTRPCReact } from "@trpc/react-query";
 import superjson from "superjson";
 import type { AppRouter } from "../../express-trpc-prisma/src/trpc/trpc";
 
+let token: string;
+
+export function setToken(newToken: string){
+  token = newToken;
+}
+
 /**
  * A set of typesafe hooks for consuming your API.
  */
@@ -35,10 +41,6 @@ export const getBaseUrl = () => {
   return `http://${localhost}:3001`;
 };
 
-/**
- * A wrapper for your app that provides the TRPC context.
- * Use only in _app.tsx
- */
 export function TRPCProvider(props: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
@@ -56,6 +58,7 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
           headers() {
             const headers = new Map<string, string>();
             headers.set("x-trpc-source", "expo-react");
+            headers.set("authorization", token);
             return Object.fromEntries(headers);
           },
         }),

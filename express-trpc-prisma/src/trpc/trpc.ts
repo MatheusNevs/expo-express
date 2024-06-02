@@ -1,4 +1,4 @@
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import { db } from "../db";
@@ -11,11 +11,20 @@ export const createContext = async ({
   req,
   res,
 }: trpcExpress.CreateExpressContextOptions) => {
-  // const session = await getServerAuthSession();
-  
+  if (req.headers.authorization) {
+    const session = await lucia.validateSession(req.headers.authorization)
+    return {
+      db,
+      session,
+      ...req.headers,
+    };
+  }
   return {
     db,
-    // session,
+    session: {
+      user: null,
+      session: null,
+    },
     ...req.headers,
   };
 };
@@ -31,7 +40,20 @@ const t = initTRPC.context<typeof createContext>().create({
     },
   }),
 });
-const procedure = t.procedure;
+
+export const procedure = t.procedure;
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      // infers the `session` as non-nullable
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});
+
 export const appRouter = t.router({
     getUserSession: procedure.input(z.object({sessionId: z.string()})).query( async ({input}) => {
       const session = await lucia.validateSession(input.sessionId);
